@@ -58,7 +58,7 @@ def upload():
 
        
         try:
-            command = ['python3', 'grade_linklab.py', filepath, 'BOMBROOT_DIR', 'SRC_DIR', 'file_grade']
+            command = ['python3', 'grade_linklab.py', filepath, BOMBROOT_DIR, SRC_DIR, 'file_grade.txt']
             result = subprocess.run(command, capture_output=True, text=True)
             output = result.stdout
 
