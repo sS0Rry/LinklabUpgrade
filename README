@@ -1,0 +1,98 @@
+#####################################################################
+# NJU:ICS Link Lab
+# Directions to Instructors
+#
+# Copyright (c) 2021, Su Feng, Nanjing University, All rights reserved.
+######################################################################
+
+This directory contains the files that you will need to run the NJU:ICS
+link lab, which develops the student's understanding of program linking and ELF.
+
+************
+1. Overview
+************
+
+In this lab, the student works on several binary relocatable object files 
+(with '.o' file extension) constituting a program. For each object file, 
+the student needs to modify, fix or supplement it to get the program properly 
+link and work as expected. The aspects of the object file to be modified 
+include the content of various sections, such as the initial values in the 
+.data/.rodata section, the instructions in the .text section, as well as the 
+relocation entries in corresponding relocation sections.
+
+After making necessary modifications to the relocatable object files, 
+students should submit them (packed into a tar file) to the instructor for 
+evaluating the correctness of their modifications, who will check whether 
+the object files work as expected after linking into an executable program.
+
+Requirements:
+- The lab should be done on a 32-bit i386 Linux system. 
+- Utilities including gcc, gdb, make, readelf, objdump, and hexedit are 
+  necessary to the experiment.
+- Python should be installed on the instructor's system.
+
+
+********
+2. Files
+********
+README                This file
+make_linklab.py       Script to build experiment data for students
+grade_linklab.py      Autograding script for instructor to evaluate student handins
+src/                  Source code of this lab
+bombs/                Default directory to store lab data built for every student
+handin/               Default directory to collect students' handins for evaluation
+
+
+*******************
+3. Building the Lab
+*******************
+
+To build the lab data packs for the students, first create a plain text file 
+(e.g. 'stu_list.csv') with comma separated fields containing the id (must be 
+the first field) of each student.
+Then type the following in the root directory of the lab:
+
+linux> python make_linklab.py stu_list.csv src bombs
+
+This will create separate lab data sub-directory (for grading) and the 
+tar file (for handout) for each student listed in 'stu_list.csv' in the 
+'bombs' directory.
+Then you can handout the generated tar file (named as linklab-<id>.tar) in 
+bombs directory to the students.
+
+
+*********************
+4. Handing in the Lab
+*********************
+
+After completing the lab, the student needs to pack all modified or created '.o' 
+binary relocatable object files (as well as those unmodified in the distributed 
+lab pack) into one tar file named by his/her id (e.g., 123456789.tar), which must not contain any directory structures, 
+and submit the tar file to the instructor.
+
+
+**********************
+5. Autograding the Lab
+**********************
+
+NOTE: DO NOT run the autograding script using an administrator account,  
+as the program submitted by students may contain harmful codes. 
+Use a regular user account without superuser privileges instead. 
+
+To autograde students' handins, first collect all student handin tar files in 
+one directory (e.g. 'handin') in lab's root directory.
+
+Then, run the autograding script as following:
+
+linux> python grade_linklab.py handin bombs src grades.txt
+
+which will evaluate the correctness of each lab stage of each student's handin 
+in the 'handin' directory, with reference to the original lab data in the 'bombs' 
+directory and the source files in the 'src' directory, and record the final grades of all students in the output file 'grades.txt'.
+
+
+*******
+Contact
+*******
+
+For any questions and suggestions, please send e-mail to <suf@nju.edu.cn>.
