@@ -18,9 +18,6 @@ import shutil
 import subprocess
 
 
-########################################################
-# Settings
-
 PROGRAM_FILE = 'linkbomb'
 SOLUTION_FILE = 'solution.txt'
 TOOL_FILES = [ 'elfzero' ]
@@ -43,25 +40,29 @@ def check_phase_files(phase_files):
 
 
 def copy_grading_files(dir_bomb, dir_work, file_list):
-
     result = ''
     for file_name in file_list:
         src_file_path = os.path.join(dir_bomb, file_name)
         if not os.path.isfile(src_file_path):
-            result = 'ERROR: ' + file_name + ' cannot be located!'
+            result = 'ERROR: Source file ' + file_name + ' cannot be located in ' + dir_bomb
+            print('ERROR: Source file ' + file_name + ' cannot be located in ' + dir_bomb)
             return False, result
 
-        #Force overwriting & using original source files
         dst_file_path = os.path.join(dir_work, file_name)
         if os.path.isfile(dst_file_path):
-            os.remove(dst_file_path)
+            os.remove(dst_file_path)  # 删除已存在的文件
 
-        shutil.copy2(src_file_path, dst_file_path)
-        if not os.path.isfile(dst_file_path):
-            result = 'ERROR: ' + file_name + ' cannot be created!'
+        try:
+            shutil.copy2(src_file_path, dst_file_path)
+        except Exception as e:
+            result = 'ERROR: Failed to copy ' + file_name + ' to ' + dir_work + '. ' + str(e)
+            print('ERROR: Failed to copy ' + file_name + ' to ' + dir_work + '. ' + str(e))
             return False, result
 
-        #os.chmod(dst_file_path, 0o755)
+        if not os.path.isfile(dst_file_path):
+            result = 'ERROR: Destination file ' + file_name + ' cannot be created in ' + dir_work
+            print('ERROR: Destination file ' + file_name + ' cannot be created in ' + dir_work)
+            return False, result
 
     return True, result
 
@@ -76,22 +77,24 @@ def process(work_id, file_handin, dir_bomb, dir_src):
 
     grade = []
     result = ''
-
     #Check naming & typing of handin files
     pl = os.path.basename(file_handin).split('.')
     if len(pl) < 2:
         result = 'ERROR: <' + file_handin + '> is not typed!'
+        print('ERROR not typed')
         return grade, result
 
     work_type = pl[len(pl)-1]
     if work_type.upper() != 'TAR':
         result = 'ERROR: <' + file_handin + '> is wrongly typed!'
+        print('error wrong')
         return grade, result
 
     #Extract handin files
     dir_work = tempfile.mkdtemp()
     if not os.path.isdir(dir_work):
         result = 'ERROR: CANNOT create temporary directory for grading!'
+        print('error cannot')
         return grade, result
     else:
         os.chmod(dir_work, 0o755)
@@ -113,12 +116,13 @@ def process(work_id, file_handin, dir_bomb, dir_src):
                 shutil.rmtree(dir_work, True)
 
                 result = 'ERROR: Tool <' + tool_file + '> is unavailable!'
+                print('error unavailable')
                 return grade, result
 
     copy_succeed, copy_result = copy_grading_files(dir_src, dir_work, TOOL_FILES)
     if not copy_succeed:
         shutil.rmtree(dir_work, True)
-
+        print('error copy fail')
         result = copy_result
         return grade, result
 
@@ -129,21 +133,21 @@ def process(work_id, file_handin, dir_bomb, dir_src):
     os.makedirs(dir_reference)
     if not os.path.isdir(dir_reference):
         shutil.rmtree(dir_work, True)
-
+        print('ERROR: Reference directory cannot be created!')
         result = 'ERROR: Reference directory cannot be created!'
         return grade, result
 
     copy_succeed, copy_result = copy_grading_files(dir_bomb, dir_reference, CHECK_FILES)
     if not copy_succeed:
         shutil.rmtree(dir_work, True)
-
+        print('ERROR: copy directory cannot be created!')
         result = copy_result
         return grade, result
 
     copy_succeed, copy_result = copy_grading_files(dir_bomb, dir_work, SOURCE_FILES)
     if not copy_succeed:
         shutil.rmtree(dir_work, True)
-
+        print('ERROR: copy directory cannot be created!')
         result = copy_result
         return grade, result
 
@@ -159,20 +163,24 @@ def process(work_id, file_handin, dir_bomb, dir_src):
 
     #Grading
     for phase in range(len(PHASE_FILES)):
+        if os.path.isfile(PROGRAM_FILE):
+            os.remove(PROGRAM_FILE)
         if not check_phase_files(PHASE_FILES[phase]):
             continue
 
         command = 'gcc -fno-pie -no-pie -o ' + PROGRAM_FILE
         for file in PHASE_FILES[phase]:
             command = command + r' ' + file
-        os.system(command)
-
+        compile_status = os.system(command)
+        if compile_status != 0:
+            print(f"Compilation failed for phase {phase + 1}. Command: {command}")
+            continue
         if not os.path.isfile(PROGRAM_FILE):
             continue
         else:
             os.chmod(PROGRAM_FILE, 0o755)
 
-        #Match with solution string
+        # Match with solution string
         command = './' + PROGRAM_FILE
         pf = os.popen(command)
         output = pf.read()
@@ -183,7 +191,7 @@ def process(work_id, file_handin, dir_bomb, dir_src):
         if output != solution_lines[phase]:
             continue
 
-        grade.append(phase+1)
+        grade.append(phase + 1)
 
     #Clean up
     if os.path.isfile(PROGRAM_FILE):
@@ -250,3 +258,4 @@ if __name__ == "__main__":
     for id in ids:
         grade = scores[id]
         print(id + r': ' + str(len(grade)) + r' @ ' + str(grade))
+

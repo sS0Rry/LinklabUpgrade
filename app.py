@@ -52,13 +52,14 @@ def upload():
         file = request.files['file']
         if file.filename == '':
             return '未选择文件'
-
+        filename = os.path.splitext(file.filename)[0]
         filepath = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(filepath)
-
+        student_id = filename  # 学生ID
+        bomb_dir = os.path.join(BOMBROOT_DIR, student_id)  # 炸弹目录
        
         try:
-            command = ['python3', 'grade_linklab.py', filepath, BOMBROOT_DIR, SRC_DIR, 'file_grade.txt']
+            command = ['python3', 'grade_linklab.py', student_id, filepath, bomb_dir, SRC_DIR]
             result = subprocess.run(command, capture_output=True, text=True)
             output = result.stdout
 
@@ -67,6 +68,7 @@ def upload():
             return f'运行评分程序时出错：{e}'
 
     return render_template('upload.html')
+
 
 
 if __name__ == '__main__':
