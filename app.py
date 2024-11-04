@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, render_template
+from flask import Flask, request, send_file, render_template,jsonify
 import os
 import subprocess  # 用于运行系统命令
 
@@ -69,7 +69,10 @@ def upload():
 
     return render_template('upload.html')
 
-
+from grade_linklab import scores
+@app.route('/scores')
+def get_scores():
+    return jsonify(scores)
 
 if __name__ == '__main__':
     app.run(debug=True)
