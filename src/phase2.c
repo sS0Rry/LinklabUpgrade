@@ -8,33 +8,19 @@
 #include <string.h>
 #include "config.h"
 
+
 //
-// Global Data
+// Global data
 //
 
-const char* phase_id = "2";
+const char* phase_id = "3";
 
-#define NOP_INST_LIST_64 "nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t"
+char PHASE3_CODEBOOK[256];
 
-/*
-* To add more variable and function definitions to confuse students
-*/
 
-char DECOY_FUNC_NAME( int index )
-{
-	char buf[] = PHASE2_COOKIE;
-	int n = strlen(buf);
-
-	return (index>=0 && index<n)? buf[index] : 0;
-} 
-
-static void OUTPUT_FUNC_NAME( const char *key, const char *output )
-{
-	if( strcmp(key,PHASE2_KEYSTR) != 0 ) return;
-		
-	printf("%s\n", output);
-}
-
+//
+// Declarations
+//
 
 //
 // Main Function
@@ -42,13 +28,16 @@ static void OUTPUT_FUNC_NAME( const char *key, const char *output )
 
 void do_phase()
 {
-#ifdef _SOLUTION_
-	char key[] = PHASE2_KEYSTR;
-	char id[] = MYID;
-	OUTPUT_FUNC_NAME( key, id );
-#else
-	asm( NOP_INST_LIST_64 );
-#endif
+	char cookie[] = PHASE3_COOKIE;
+	int i;
+
+	// Call external function
+	//i = PHASE3_FUNCNAME( cookie );
+
+	// Coding to ID
+	for( i=0; i<sizeof(cookie)-1; i++ )
+		printf( "%c", PHASE3_CODEBOOK[(unsigned char)(cookie[i])] );
+	printf( "\n" );
 }
 
 

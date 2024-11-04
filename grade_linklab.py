@@ -21,10 +21,10 @@ import subprocess
 PROGRAM_FILE = 'linkbomb'
 SOLUTION_FILE = 'solution.txt'
 TOOL_FILES = [ 'elfzero' ]
-SOURCE_FILES = [ 'main.o', 'phase3.o' ]
-PHASE_FILES = [ ['main.o', 'phase1.o'], ['main.o', 'phase2.o'], ['main.o', 'phase3.o', 'phase3_patch.o'], ['main.o', 'phase4.o'], ['main.o', 'phase5.o'], ['main.o', 'phase6.o'] ]
-PHASE_HANDIN = [ ['phase1.o'], ['phase2.o'], ['phase3_patch.o'], ['phase4.o'], ['phase5.o'], ['phase6.o'] ]
-CHECK_FILES = [ 'phase1.o', 'phase2.o', 'phase3.o', 'phase4.o', 'phase5.o', 'phase6.o' ]
+SOURCE_FILES = [ 'main.o', 'phase2.o' ]
+PHASE_FILES = [ ['main.o', 'phase1.o'], ['main.o', 'phase2.o', 'phase2_patch.o'], ['main.o', 'phase3.o'] ]
+PHASE_HANDIN = [ ['phase1.o'], ['phase2.o'], ['phase2_patch.o'], ['phase3.o']]
+CHECK_FILES = [ 'phase1.o', 'phase2.o', 'phase3.o']
 REFERENCE_DIR = 'reference'
 
 
@@ -73,6 +73,8 @@ def copy_grading_files(dir_bomb, dir_work, file_list):
 # file_handin: tarball containing user-submiited bomb result
 # dir_bomb: directory containing user-specific original bomb data
 # dir_src: directory containing 'template' sources of all bombs
+scores = {}
+
 def process(work_id, file_handin, dir_bomb, dir_src):
 
     grade = []
@@ -203,6 +205,12 @@ def process(work_id, file_handin, dir_bomb, dir_src):
 
     #Clean up
     shutil.rmtree(dir_work, True)
+
+    #Restore score
+    scores[work_id] = {
+        'len(grade)' : len(grade),
+        'grade' : grade
+    }
 
     return grade, result
 

@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, render_template
+from flask import Flask, request, send_file, render_template,jsonify
 import os
 import subprocess  # 用于运行系统命令
 
@@ -9,6 +9,7 @@ BOMBROOT_DIR = 'bombs'
 UPLOAD_FOLDER = 'handin'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # 确保handin目录存在
 
+scores = {}
 
 def process(bomb_id, src_dir, bomb_dir, bomb_datapack):
     if len(bomb_id.strip()) <= 0:
@@ -69,7 +70,13 @@ def upload():
 
     return render_template('upload.html')
 
+@app.route('/scores')
+def get_scores():
+    return jsonify(scores)
 
+@app.route('/scoreboard')
+def scoreboard():
+    return render_template('LinklabScoreboard.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

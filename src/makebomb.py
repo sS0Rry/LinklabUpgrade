@@ -16,26 +16,15 @@ import shutil
 ########################################################
 # Settings
 
-PROJECT_FILES = [ 'main.c', 'phase1.c', 'phase2.c', 'phase3.c', 'phase3_patch.c', 'phase4.c', 'phase5.c', 'phase6.c', 'elfzero' ]
-COMPILE_FILES = [ 'main.c', 'phase1.c', 'phase2.c', 'phase3.c', 'phase3_patch.c', 'phase4.c', 'phase5.c' ]
-COMPILE_PIC_FILES = [ 'phase6.c' ]
-HANDOUT_FILES = [ 'main.o', 'phase1.o', 'phase2.o', 'phase3.o', 'phase4.o', 'phase5.o', 'phase6.o' ]
-HANDIN_FILES = [ 'phase1.o', 'phase2.o', 'phase3_patch.o', 'phase4.o', 'phase5.o', 'phase6.o' ]
-PHASE_FILES = [ 'main.o phase1.o', 'main.o phase2.o', 'main.o phase3.o phase3_patch.o', 'main.o phase4.o', 'main.o phase5.o', 'main.o phase6.o' ]
-PHASE_CMDOPTS = [ '', '', '', '', '', '' ]
+PROJECT_FILES = [ 'main.c', 'phase1.c' , 'phase2.c', 'phase2_patch.c', 'phase3.c', 'elfzero' ]
+COMPILE_FILES = [ 'main.c', 'phase1.c', 'phase2.c', 'phase2_patch.c', 'phase3.c']
+HANDOUT_FILES = [ 'main.o', 'phase1.o',  'phase2.o', 'phase3.o']
+HANDIN_FILES = [ 'phase1.o',  'phase2_patch.o', 'phase3.o' ]
+PHASE_FILES = [ 'main.o phase1.o', 'main.o phase2.o phase2_patch.o', 'main.o phase3.o']
+PHASE_CMDOPTS = [ '', '', '']
 SOLUTION_FILE = 'solution.txt'
 SOLUTION_DIR = 'solution'
 SOLUTION_PROGRAM = '_linkbomb'
-
-PHASE5_RELOC_ITEMS = [ 'transform_code', 'encode_1' ]
-PHASE5_RELOC_COUNT = 2
-PHASE5_RELOC_RAND_ITEMS = [ 'generate_code', 'encoder', 'encode_2' ]
-PHASE5_RELOC_RAND_COUNT = 5
-
-PHASE6_RELOC_ITEMS = [ 'generate_code', '_GLOBAL_OFFSET_TABLE_' ]
-PHASE6_RELOC_COUNT = 3
-PHASE6_RELOC_RAND_ITEMS = [ 'transform_code', 'encoder' ]
-PHASE6_RELOC_RAND_COUNT = 5
 
 
 ########################################################
@@ -43,8 +32,6 @@ PHASE6_RELOC_RAND_COUNT = 5
 
 def make_config(id, phases, file_include):
 
-    # Declare global variables
-    global PHASE5_RELOC_ITEMS, PHASE5_RELOC_RAND_ITEMS, PHASE6_RELOC_ITEMS, PHASE6_RELOC_RAND_ITEMS
 
     ########
     fi = open(file_include, 'w')
@@ -102,28 +89,6 @@ def make_config(id, phases, file_include):
 
     fi.write(r'#define BUFLEN ' + str(BUFLEN-BUFPOS-1) + os.linesep)
 
-    #### PHASE 2 ####
-    OUTPUT_FUNC_NAME = ''
-    for i in range(0,8):
-        OUTPUT_FUNC_NAME = OUTPUT_FUNC_NAME + random.choice(string.ascii_letters)
-    fi.write(r'#define OUTPUT_FUNC_NAME ' + OUTPUT_FUNC_NAME + os.linesep)
-
-    DECOY_FUNC_NAME = ''
-    for i in range(0,10):
-        DECOY_FUNC_NAME = DECOY_FUNC_NAME + random.choice(string.ascii_letters)
-    fi.write(r'#define DECOY_FUNC_NAME ' + DECOY_FUNC_NAME + os.linesep)
-
-    PHASE2_KEYSTR = ''
-    for i in range(0,7):
-        PHASE2_KEYSTR = PHASE2_KEYSTR + random.choice(string.ascii_letters)
-    fi.write(r'#define PHASE2_KEYSTR ' + r'"' + PHASE2_KEYSTR + r'"' + os.linesep)
-
-    PHASE2_COOKIE = '"'
-    charbook = string.ascii_letters + string.digits + " \t";
-    for i in range(random.randint(4,64)):
-        PHASE2_COOKIE = PHASE2_COOKIE + random.choice(charbook)
-    PHASE2_COOKIE = PHASE2_COOKIE + '"'
-    fi.write(r'#define PHASE2_COOKIE ' + PHASE2_COOKIE + os.linesep)
 
     #### PHASE 3 ####
     PHASE3_COOKIE = ''
@@ -172,84 +137,20 @@ def make_config(id, phases, file_include):
     for i in range(0,len(PHASE4_DO_CASES)):
         fi.write(r'#define DO_CASE_' + string.ascii_uppercase[i] + r" " + PHASE4_DO_CASES[i] + os.linesep)
 
-    #### PHASE 5 ####
-    PHASE5_COOKIE = random.randint(128, 255)
-    fi.write(r'#define PHASE5_COOKIE ' + str(PHASE5_COOKIE) + os.linesep)
-
-    CODE = ''
-    for i in range(0,6):
-        CODE = CODE + random.choice(string.ascii_letters)
-    fi.write(r'#define CODE ' + CODE + os.linesep)
-
-    CODE_TRAN_ARRAY = ''
-    for i in range(6):
-        CODE_TRAN_ARRAY = CODE_TRAN_ARRAY + random.choice(string.ascii_letters)
-    fi.write(r'#define CODE_TRAN_ARRAY ' + CODE_TRAN_ARRAY + os.linesep)
-
-    CODE_TRAN_ARRAY_SIZE = random.randint(8, 16)
-    CODE_TRAN_ARRAY_INIT_VALUE = '{'
-    for i in range(CODE_TRAN_ARRAY_SIZE):
-        num = random.randint(-32767, +32767)
-        CODE_TRAN_ARRAY_INIT_VALUE = CODE_TRAN_ARRAY_INIT_VALUE + '%d, '%num
-    CODE_TRAN_ARRAY_INIT_VALUE = CODE_TRAN_ARRAY_INIT_VALUE + '}'
-    fi.write(r'#define CODE_TRAN_ARRAY_INIT_VALUE ' + CODE_TRAN_ARRAY_INIT_VALUE + os.linesep)
-
-    FDICT = ''
-    for i in range(6):
-        FDICT = FDICT + random.choice(string.ascii_letters)
-    fi.write(r'#define FDICT ' + FDICT + os.linesep)
-
-    RDICT = ''
-    for i in range(6):
-        RDICT = RDICT + random.choice(string.ascii_letters)
-    fi.write(r'#define RDICT ' + RDICT + os.linesep)
-
-    sdict = list(range(32,127))
-    random.shuffle(sdict)
-    fdict = list(range(0,128))
-    fdict[32:127] = sdict
-    rdict = list(range(0,128))
-    for i in range(32,127):
-        rdict[fdict[i]] = i
-
-    FDICTDAT = '{' + str(fdict[0])
-    RDICTDAT = '{' + str(rdict[0])
-    #dictbook = string.ascii_letters + string.digits + string.punctuation;
-    for i in range(1,128):
-        FDICTDAT = FDICTDAT + ',' + str(fdict[i])
-        RDICTDAT = RDICTDAT + ',' + str(rdict[i])
-    FDICTDAT = FDICTDAT + '}'
-    RDICTDAT = RDICTDAT + '}'
-    fi.write(r'#define FDICTDAT ' + FDICTDAT + os.linesep)
-    fi.write(r'#define RDICTDAT ' + RDICTDAT + os.linesep)
-
-    ENCODER_ID = random.randint(0, 1)
-    fi.write(r'#define ENCODER_ID ' + str(ENCODER_ID) + os.linesep)
-
-    #### PHASE 6 ####
-    PHASE6_COOKIE = random.randint(128, 255)
-    fi.write(r'#define PHASE6_COOKIE ' + str(PHASE6_COOKIE) + os.linesep)
 
     ########
     fi.close()
 
-    # Update global variables
-    PHASE5_RELOC_ITEMS = PHASE5_RELOC_ITEMS + [ BUFVAR ]
-    PHASE5_RELOC_RAND_ITEMS = PHASE5_RELOC_RAND_ITEMS + [ CODE_TRAN_ARRAY, CODE, FDICT ]
-  
-    PHASE6_RELOC_ITEMS = PHASE6_RELOC_ITEMS + [ FDICT ]
-    PHASE6_RELOC_RAND_ITEMS = PHASE6_RELOC_RAND_ITEMS + [ BUFVAR, CODE_TRAN_ARRAY, CODE ]
+    
 
 
-def compile_object(compile_flags, source_files, source_pic_files):
+def compile_object(compile_flags, source_files):
 
     for file in source_files:
         command = 'gcc -fno-pie -fcommon -O0 ' + compile_flags + ' -c ' + file
         os.system(command)
 
-    for file in source_pic_files:
-        command = 'gcc -fno-pie -fcommon -O0 ' + compile_flags + ' -fPIC -c ' + file
-        os.system(command)
+
 
 
 def patch_relocation(obj_file, reloc_items, reloc_count, item_to_randomized = False):
@@ -307,25 +208,18 @@ def make_bomb(bomb_id, src_dir, bomb_dir, bomb_datapack):
     os.chdir(bomb_dir)
 
     #Generate target files
-    compile_object('', COMPILE_FILES, COMPILE_PIC_FILES)
-
-    #Patch target files
-    patch_relocation('phase5.o', PHASE5_RELOC_ITEMS, PHASE5_RELOC_COUNT, True)
-    patch_relocation('phase5.o', PHASE5_RELOC_RAND_ITEMS, PHASE5_RELOC_RAND_COUNT, False)
-
-    patch_relocation('phase6.o', PHASE6_RELOC_ITEMS, PHASE6_RELOC_COUNT, True)
-    patch_relocation('phase6.o', PHASE6_RELOC_RAND_ITEMS, PHASE6_RELOC_RAND_COUNT, False)
+    compile_object('', COMPILE_FILES)
 
     #Generate solution file (for autograding)
     os.makedirs(SOLUTION_DIR)
 
-    for file in COMPILE_FILES+COMPILE_PIC_FILES:
+    for file in COMPILE_FILES:
         shutil.copy2(file, SOLUTION_DIR)
 
     cwd_path_bomb = os.getcwd()
     os.chdir(SOLUTION_DIR)
 
-    compile_object('-I.. -D_SOLUTION_', COMPILE_FILES, COMPILE_PIC_FILES)
+    compile_object('-I.. -D_SOLUTION_', COMPILE_FILES)
 
     command = r'cat /dev/null > ' + SOLUTION_FILE
     os.system(command)
@@ -361,7 +255,7 @@ def make_bomb(bomb_id, src_dir, bomb_dir, bomb_datapack):
 
 
 if __name__ == "__main__":
-    random.seed(17)
+    random.seed()
 
     status = make_bomb(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
     if status:
