@@ -70,20 +70,13 @@ def upload():
 
     return render_template('upload.html')
 
-<<<<<<< HEAD
-@app.route('/scores')
-def get_scores():
-    return jsonify(scores)
 
 @app.route('/scoreboard')
 def scoreboard():
     return render_template('LinklabScoreboard.html')
-=======
 from grade_linklab import scores
 @app.route('/scores')
 def get_scores():
     return jsonify(scores)
->>>>>>> bd149586225390355c42d40dfc9f95445f591f23
-
 if __name__ == '__main__':
     app.run(debug=True)
