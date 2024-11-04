@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "animate.css": "^4.1.1",
+    "fullpage.js": "^4.0.30",
+    "swiper": "^11.1.14"
+  }
+}
