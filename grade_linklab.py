@@ -73,7 +73,6 @@ def copy_grading_files(dir_bomb, dir_work, file_list):
 # file_handin: tarball containing user-submiited bomb result
 # dir_bomb: directory containing user-specific original bomb data
 # dir_src: directory containing 'template' sources of all bombs
-scores = {}
 
 def process(work_id, file_handin, dir_bomb, dir_src):
 
@@ -207,11 +206,29 @@ def process(work_id, file_handin, dir_bomb, dir_src):
     shutil.rmtree(dir_work, True)
 
     #Restore score
-    scores[work_id] = {
+    score = {}
+    score[work_id] = {
+        'work_id' : work_id,
         'len(grade)' : len(grade),
         'grade' : grade
+        
     }
-
+    def deep_update(source,overrides):
+        for work_id , grade in overrides.items():
+            if isinstance (grade,dict) and grade and work_id in source:
+                source[work_id] = deep_update(source.get(work_id,{}),grade)
+            else:
+                source[work_id] = grade
+        return source
+    try:
+        with open('scores.json', 'r') as f:
+            import json
+            scores = json.load(f)
+    except FileNotFoundError:
+        scores = {}
+    scores = deep_update(scores,score)
+    with open('scores.json', 'w') as f:
+        json.dump(scores, f)
     return grade, result
 
 
