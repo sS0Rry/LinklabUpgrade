@@ -320,14 +320,16 @@
         <div class="flex items-center justify-center min-h-screen">
           <div class="game-card animate__animated animate__fadeIn ml-[20%]">
             <h2 class="text-4xl font-bold mb-8 text-center">查看排行榜</h2>
+            <p id="time" class="text-center mb-4">Last updated: -- (update every 30 secs)</p>
             <div class="score-container">
               <table class="w-full" id="scoresTable">
                 <thead>
                   <tr class="border-b border-white/20">
                     <th class="p-4">Bomb ID</th>
-                    <th class="p-4">完成阶段</th>
-                    <th class="p-4">得分</th>
-                    <th class="p-4">排名</th>
+                    <th class="p-4">Update Time</th>
+                    <th class="p-4">Phases</th>
+                    <th class="p-4">Score</th>
+                    <th class="p-4">Status</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
@@ -347,10 +349,8 @@
         navigation: true,
         navigationPosition: "right",
         onLeave: function (origin, destination, direction) {
-          // 更新进度条
           document.getElementById("progressBar").style.width = destination.index * 33.33 + "%";
 
-          // 添加动画效果
           const cards = document.querySelectorAll(".game-card");
           if (cards[destination.index - 1]) {
             cards[destination.index - 1].classList.add("animate__fadeIn");
@@ -361,31 +361,73 @@
         },
       });
 
+      const UPDATE_INTERVAL = 30000; // 30 seconds
+
       async function fetchScores() {
         try {
           const response = await fetch("/scores");
-          if (!response.ok) throw new Error('Failed to fetch scores');
-          
-          const text = await response.text();
-          // 解析所有评分结果
-          const scores = {};
-          const regex = /评分结果：<br>(.*?):\s*(\d+)\s*@\s*\[(.*?)\]/g;
-          let match;
-          
-          while ((match = regex.exec(text)) !== null) {
-            const [_, id, score, stages] = match;
-            scores[id] = {
-              grade: stages ? stages.split(',').map(s => s.trim()) : [],
-              score: parseInt(score),
-              rank: '-'
-            };
+          if (!response.ok) throw new Error("Failed to fetch scores");
+
+          const scores = await response.json();
+          const allGrades = [];
+
+          for (const work_id in scores) {
+            const lenGrade = scores[work_id].grade.length;
+            const upload_time = scores[work_id].upload_time;
+            allGrades.push({ id: work_id, grade: lenGrade, time: upload_time });
           }
-          
-          updateScoreTable(scores);
+
+          allGrades.sort((a, b) => {
+            if (a.grade === 0 && b.grade === 0) {
+              return a.id.localeCompare(b.id);
+            }
+            if (a.grade === 0) return 1;
+            if (b.grade === 0) return -1;
+            return b.grade - a.grade;
+          });
+
+          let rank = 1;
+          allGrades.forEach((item) => {
+            item.rank = item.grade > 0 ? rank++ : "N/A";
+          });
+
+          updateScoreTable(scores, allGrades);
+          updateTime();
         } catch (error) {
-          console.error('Error fetching scores:', error);
+          console.error("Error fetching scores:", error);
+          updateTime();
         }
       }
+
+      function updateScoreTable(scores, allGrades) {
+        const tbody = document.getElementById("scoresTable").getElementsByTagName("tbody")[0];
+        tbody.innerHTML = "";
+
+        allGrades.forEach(({ id, rank }) => {
+          const score = scores[id];
+          const row = tbody.insertRow();
+          row.innerHTML = `
+            <td class="p-4">${id}</td>
+            <td class="p-4">${score.upload_time || "-"}</td>
+            <td class="p-4">${score.grade.length}</td>
+            <td class="p-4">${score.grade.length * 10}</td>
+            <td class="p-4">${rank}</td>
+          `;
+        });
+      }
+
+      function updateTime() {
+        const now = new Date();
+        document.getElementById(
+          "time"
+        ).textContent = `Last updated: ${now.toLocaleTimeString()} (update every 30 secs)`;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        updateTime();
+        fetchScores();
+        setInterval(fetchScores, UPDATE_INTERVAL);
+      });
 
       document.querySelector(".start-button").addEventListener("click", function () {
         fullpage_api.moveSectionDown();
@@ -399,65 +441,47 @@
 
       async function handleUpload(event) {
         event.preventDefault();
-        
+
         const form = event.target;
         const formData = new FormData(form);
-        
+
         try {
-          const response = await fetch('/upload', {
-            method: 'POST',
-            body: formData
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
           });
-          
+
           if (response.ok) {
             const text = await response.text();
             // 解析返回的文本
             const match = text.match(/评分结果：<br>(.*?):\s*(\d+)\s*@\s*\[(.*?)\]/);
-            
+
             if (match) {
               const [_, id, score, stages] = match;
               // 创建一个评分对象
               const scoreData = {
                 [id]: {
-                  grade: stages ? stages.split(',').map(s => s.trim()) : [],
+                  grade: stages ? stages.split(",").map((s) => s.trim()) : [],
                   score: parseInt(score),
-                  rank: '-'  // 暂时不处理排名
-                }
+                  rank: "-", // 暂时不处理排名
+                },
               };
-              
+
               // 更新表格
               updateScoreTable(scoreData);
             }
-            
+
             // 自动滚动到评分板页面
             fullpage_api.moveTo(4);
-            
+
             // 清空表单
             form.reset();
           } else {
-            console.error('Upload failed');
+            console.error("Upload failed");
           }
         } catch (error) {
-          console.error('Error:', error);
+          console.error("Error:", error);
         }
-      }
-
-      function updateScoreTable(scoreData) {
-        const table = document.getElementById("scoresTable").getElementsByTagName("tbody")[0];
-        
-        // 清空现有数据
-        table.innerHTML = "";
-        
-        // 添加新数据
-        Object.entries(scoreData).forEach(([id, data]) => {
-          const row = table.insertRow();
-          row.innerHTML = `
-            <td class="p-4">${id}</td>
-            <td class="p-4">${data.grade.length}</td>
-            <td class="p-4">${data.grade.join(", ") || "0"}</td>
-            <td class="p-4">${data.rank}</td>
-          `;
-        });
       }
     </script>
   </body>
