@@ -16,7 +16,7 @@ import sys
 import tempfile
 import shutil
 import subprocess
-
+import json
 
 PROGRAM_FILE = 'linkbomb'
 SOLUTION_FILE = 'solution.txt'
@@ -73,7 +73,6 @@ def copy_grading_files(dir_bomb, dir_work, file_list):
 # file_handin: tarball containing user-submiited bomb result
 # dir_bomb: directory containing user-specific original bomb data
 # dir_src: directory containing 'template' sources of all bombs
-scores = {}
 
 def process(work_id, file_handin, dir_bomb, dir_src):
 
@@ -206,12 +205,39 @@ def process(work_id, file_handin, dir_bomb, dir_src):
     #Clean up
     shutil.rmtree(dir_work, True)
 
-    #Restore score
-    scores[work_id] = {
-        'len(grade)' : len(grade),
-        'grade' : grade
-    }
+    #Updatetime
+    import datetime
+    upload_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # 获取当前时间并格式化
 
+    #Restore score
+    score = {}
+    score[work_id] = {
+        'work_id' : work_id,
+        'len(grade)' : len(grade),
+        'grade' : grade,
+        'upload_time': upload_time
+    }
+    def deep_update(source, overrides):
+     for work_id, update in overrides.items():
+        if work_id in source:
+            if isinstance(update, dict) and isinstance(source[work_id], dict):
+                # 如果source中对应的值也是字典，则递归更新
+                source[work_id] = deep_update(source[work_id], update)
+            else:
+                # 如果不是字典，则直接覆盖source中的值
+                source[work_id] = update
+        else:
+            # 如果work_id不在source中，则添加新的键值对
+            source[work_id] = update
+     return source
+    try:
+    	with open('scores.json', 'r') as f:
+        	scores = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+    	scores = {}
+    scores = deep_update(scores,score)
+    with open('scores.json', 'w') as f:
+        json.dump(scores, f)
     return grade, result
 
 

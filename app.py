@@ -1,5 +1,6 @@
 from flask import Flask, request, send_file, render_template,jsonify
 import os
+import json
 import subprocess  # 用于运行系统命令
 
 app = Flask(__name__)
@@ -10,6 +11,7 @@ UPLOAD_FOLDER = 'handin'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # 确保handin目录存在
 
 scores = {}
+score = {}
 
 def process(bomb_id, src_dir, bomb_dir, bomb_datapack):
     if len(bomb_id.strip()) <= 0:
@@ -70,13 +72,15 @@ def upload():
 
     return render_template('upload.html')
 
+@app.route('/scores')
+def get_scores():
+    with open('scores.json', 'r') as f:
+        scores = json.load(f)
+    return jsonify(scores)
 
 @app.route('/scoreboard')
 def scoreboard():
     return render_template('LinklabScoreboard.html')
-from grade_linklab import scores
-@app.route('/scores')
-def get_scores():
-    return jsonify(scores)
+
 if __name__ == '__main__':
     app.run(debug=True)
