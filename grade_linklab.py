@@ -16,7 +16,7 @@ import sys
 import tempfile
 import shutil
 import subprocess
-
+import json
 
 PROGRAM_FILE = 'linkbomb'
 SOLUTION_FILE = 'solution.txt'
@@ -231,11 +231,10 @@ def process(work_id, file_handin, dir_bomb, dir_src):
             source[work_id] = update
      return source
     try:
-        with open('scores.json', 'r') as f:
-            import json
-            scores = json.load(f)
-    except FileNotFoundError:
-        scores = {}
+    	with open('scores.json', 'r') as f:
+        	scores = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+    	scores = {}
     scores = deep_update(scores,score)
     with open('scores.json', 'w') as f:
         json.dump(scores, f)
