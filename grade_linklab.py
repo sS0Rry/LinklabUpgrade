@@ -21,10 +21,10 @@ import subprocess
 PROGRAM_FILE = 'linkbomb'
 SOLUTION_FILE = 'solution.txt'
 TOOL_FILES = [ 'elfzero' ]
-SOURCE_FILES = [ 'main.o', 'phase3.o' ]
-PHASE_FILES = [ ['main.o', 'phase1.o'], ['main.o', 'phase2.o'], ['main.o', 'phase3.o', 'phase3_patch.o'], ['main.o', 'phase4.o'], ['main.o', 'phase5.o'], ['main.o', 'phase6.o'] ]
-PHASE_HANDIN = [ ['phase1.o'], ['phase2.o'], ['phase3_patch.o'], ['phase4.o'], ['phase5.o'], ['phase6.o'] ]
-CHECK_FILES = [ 'phase1.o', 'phase2.o', 'phase3.o', 'phase4.o', 'phase5.o', 'phase6.o' ]
+SOURCE_FILES = [ 'main.o', 'phase2.o' ]
+PHASE_FILES = [ ['main.o', 'phase1.o'], ['main.o', 'phase2.o', 'phase2_patch.o'], ['main.o', 'phase3.o'] ]
+PHASE_HANDIN = [ ['phase1.o'], ['phase2.o'], ['phase2_patch.o'], ['phase3.o']]
+CHECK_FILES = [ 'phase1.o', 'phase2.o', 'phase3.o']
 REFERENCE_DIR = 'reference'
 
 
