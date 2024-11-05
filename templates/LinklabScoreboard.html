@@ -26,22 +26,40 @@
                         var upload_time = scores[work_id].upload_time;
                         allGrades.push({id: work_id, grade: lenGrade,time: upload_time}); // 将学生ID和grade长度添加到数组中
                     }
-
-                    // 根据grade长度对所有grade进行排序
+                    // 根据grade长度对所有grade进行排序，grade长度为0的排在最后
                     allGrades.sort(function(a, b) {
-                        return b.grade - a.grade; // 降序排序
+                            // 如果两个grade的长度都为0，按照ID排序
+                        if (a.grade === 0 && b.grade === 0) {
+                            return a.id.localeCompare(b.id);
+                        }
+                            // 如果只有一个grade的长度为0，将其排在最后
+                        if (a.grade === 0) {
+                            return 1;
+                        }
+                        if (b.grade === 0) {
+                            return -1;
+                        }
+                            // 如果两个grade的长度都不为0，按照长度降序排序
+                        return b.grade - a.grade;
                     });
 
                     // 为每个grade分配排名
+                    let rank = 1;
                     for (var i = 0; i < allGrades.length; i++) {
-                        allGrades[i].rank = i + 1; // 排名从1开始
+                        // 如果grade长度不为0，则分配排名
+                        if (allGrades[i].grade > 0) {
+                            allGrades[i].rank = rank++;
+                        } else {
+                            // 如果grade长度为0，则排在最后，排名相同，这里可以给一个特定的排名或者保持原样
+                            allGrades[i].rank = 'N/A'; // 或者给一个特定的排名数字
+                        }
                     }
-
+                    
                     // 再次遍历scores，添加排名信息到表格中
                     for (var work_id in scores) {
                         var lenGrade = scores[work_id].grade.length;
                         var grade = scores[work_id].grade.join(', ');
-                        var upload_time = scores[work_id].upload_time;
+                        var 
                         var rank = allGrades.find(x => x.id === work_id).rank; // 找到对应的排名
                         var row = $('<tr></tr>');
                         row.append($('<td></td>').text(work_id));
