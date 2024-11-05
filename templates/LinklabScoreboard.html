@@ -23,6 +23,7 @@
                     for (var work_id in scores) {
                         var lenGrade = scores[work_id].grade.length;
                         var grade = scores[work_id].grade.join(', ');
+                        var upload_time = scores[work_id].upload_time;
                         allGrades.push({id: work_id, grade: lenGrade}); // 将学生ID和grade长度添加到数组中
                     }
 
@@ -43,7 +44,7 @@
                         var rank = allGrades.find(x => x.id === work_id).rank; // 找到对应的排名
                         var row = $('<tr></tr>');
                         row.append($('<td></td>').text(work_id));
-                        
+                        row.append($('<td></td>').text(upload_time));
                         row.append($('<td></td>').text(lenGrade));
                         row.append($('<td></td>').text(lenGrade*10));
                         row.append($('<td></td>').text(rank)); // 添加排名列

@@ -21,10 +21,10 @@ import subprocess
 PROGRAM_FILE = 'linkbomb'
 SOLUTION_FILE = 'solution.txt'
 TOOL_FILES = [ 'elfzero' ]
-SOURCE_FILES = [ 'main.o', 'phase2.o' ]
-PHASE_FILES = [ ['main.o', 'phase1.o'], ['main.o', 'phase2.o', 'phase2_patch.o'], ['main.o', 'phase3.o'] ]
-PHASE_HANDIN = [ ['phase1.o'], ['phase2.o'], ['phase2_patch.o'], ['phase3.o']]
-CHECK_FILES = [ 'phase1.o', 'phase2.o', 'phase3.o']
+SOURCE_FILES = [ 'main.o', 'phase3.o' ]
+PHASE_FILES = [ ['main.o', 'phase1.o'], ['main.o', 'phase2.o'], ['main.o', 'phase3.o', 'phase3_patch.o'], ['main.o', 'phase4.o'], ['main.o', 'phase5.o'], ['main.o', 'phase6.o'] ]
+PHASE_HANDIN = [ ['phase1.o'], ['phase2.o'], ['phase3_patch.o'], ['phase4.o'], ['phase5.o'], ['phase6.o'] ]
+CHECK_FILES = [ 'phase1.o', 'phase2.o', 'phase3.o', 'phase4.o', 'phase5.o', 'phase6.o' ]
 REFERENCE_DIR = 'reference'
 
 
@@ -205,21 +205,31 @@ def process(work_id, file_handin, dir_bomb, dir_src):
     #Clean up
     shutil.rmtree(dir_work, True)
 
+    #Updatetime
+    import datetime
+    upload_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # 获取当前时间并格式化
+
     #Restore score
     score = {}
     score[work_id] = {
         'work_id' : work_id,
         'len(grade)' : len(grade),
-        'grade' : grade
-        
+        'grade' : grade,
+        'upload_time': upload_time
     }
-    def deep_update(source,overrides):
-        for work_id , grade in overrides.items():
-            if isinstance (grade,dict) and grade and work_id in source:
-                source[work_id] = deep_update(source.get(work_id,{}),grade)
+    def deep_update(source, overrides):
+     for work_id, update in overrides.items():
+        if work_id in source:
+            if isinstance(update, dict) and isinstance(source[work_id], dict):
+                # 如果source中对应的值也是字典，则递归更新
+                source[work_id] = deep_update(source[work_id], update)
             else:
-                source[work_id] = grade
-        return source
+                # 如果不是字典，则直接覆盖source中的值
+                source[work_id] = update
+        else:
+            # 如果work_id不在source中，则添加新的键值对
+            source[work_id] = update
+     return source
     try:
         with open('scores.json', 'r') as f:
             import json
