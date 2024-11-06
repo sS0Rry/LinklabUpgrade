@@ -1,63 +1,503 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文件上传与下载</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        h1 {
-            color: #333;
-        }
-        form {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        input[type="text"],
-        input[type="file"],
-        input[type="submit"] {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        input[type="submit"] {
-            background-color: #5cb85c;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background-color: #4cae4c;
-        }
-        a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <h1>下载生成的Bomb文件</h1>
-    <form method="post" action="/generate">
-        <input type="text" name="student_id" placeholder="学号" required>
-        <input type="submit" value="生成并下载">
-    </form>
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Link Lab Challenge</title>
 
-    <h1>上传评分文件</h1>
-    <p>
-        <a href="/upload">点击这里上传评分文件</a>
-    </p>
-</body>
+    <!-- 外部CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      .section {
+        background: #1a1a1a;
+        color: white;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .section::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+          45deg,
+          transparent 45%,
+          rgba(0, 191, 255, 0.1) 50%,
+          transparent 55%
+        );
+        transform: rotate(45deg);
+        animation: shine 10s linear infinite;
+      }
+
+      .level-title {
+        position: absolute;
+        left: -20px;
+        top: 40px;
+        padding: 1rem 6rem 1rem 3rem;
+        background: #00bfff;
+        color: #fff;
+        font-family: "Orbitron", sans-serif;
+        clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+        transform: skew(-15deg);
+        z-index: 2;
+      }
+
+      .level-step {
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3rem;
+        font-weight: 700;
+        display: block;
+        transform: skew(15deg);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .game-button {
+        background: linear-gradient(45deg, #00bfff, #0080ff);
+        padding: 15px 30px;
+        border-radius: 25px;
+        color: white;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+      }
+
+      .game-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+      }
+
+      .game-card {
+        width: 480px;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 2rem;
+        border: 1px solid rgba(0, 191, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 191, 255, 0.1);
+        position: relative;
+        z-index: 1;
+      }
+
+      @keyframes shine {
+        0% {
+          transform: translateX(-50%) rotate(45deg);
+        }
+        100% {
+          transform: translateX(50%) rotate(45deg);
+        }
+      }
+
+      .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 4px;
+        background: #00bfff;
+        z-index: 1000;
+        transition: width 0.5s ease;
+      }
+
+      .welcome-section {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .welcome-text {
+        font-family: "Orbitron", sans-serif;
+        color: #fff;
+        text-align: center;
+        opacity: 1;
+      }
+
+      .welcome-title {
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .welcome-subtitle {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .start-button {
+        display: inline-block;
+        font-size: 3rem;
+        color: rgba(0, 191, 255, 0.8);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        opacity: 0;
+        animation: fadeIn 1s forwards, bounce 2s infinite;
+        animation-delay: 3s;
+        margin-top: 2rem;
+      }
+
+      .start-button:hover {
+        color: rgba(0, 191, 255, 1);
+        text-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .typewriter {
+        overflow: hidden;
+        white-space: nowrap;
+        margin: 0 auto;
+        opacity: 0;
+      }
+
+      .typewriter-1 {
+        animation: typing 4s steps(40, end) forwards;
+        animation-delay: 0s;
+      }
+
+      .typewriter-2 {
+        animation: typing 4s steps(40, end) forwards;
+        animation-delay: 1s;
+      }
+
+      .typewriter-3 {
+        animation: typing 4s steps(40, end) forwards;
+        animation-delay: 2s;
+      }
+
+      @keyframes typing {
+        0% {
+          width: 0;
+          opacity: 1;
+        }
+        100% {
+          width: 100%;
+          opacity: 1;
+        }
+      }
+
+      .score-container {
+        max-height: 60vh;
+        overflow-y: auto;
+        margin: 1rem 0;
+      }
+
+      .scroll-arrow {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        cursor: pointer;
+        animation: bounce 2s infinite;
+        color: rgba(0, 191, 255, 0.6);
+        font-size: 2rem;
+        z-index: 10;
+      }
+
+      @keyframes bounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+          transform: translateY(0) translateX(-50%);
+        }
+        40% {
+          transform: translateY(-20px) translateX(-50%);
+        }
+        60% {
+          transform: translateY(-10px) translateX(-50%);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div id="fullpage">
+      <div class="section welcome-section">
+        <div class="flex flex-col items-center justify-center min-h-screen">
+          <div class="welcome-text typewriter typewriter-1">
+            <h1 class="welcome-title">Hello 👋</h1>
+          </div>
+          <div class="welcome-text typewriter typewriter-2">
+            <h2 class="welcome-subtitle">Welcome to LinkLab!</h2>
+          </div>
+          <div class="welcome-text typewriter typewriter-3">
+            <h2 class="welcome-subtitle">Have a nice trip ✨</h2>
+          </div>
+          <div class="start-button">↓</div>
+        </div>
+      </div>
+      <!-- 第2页：下载Bomb文件 -->
+      <div class="section">
+        <div class="level-title">
+          <span class="level-step">Step One</span>
+        </div>
+        <div class="flex items-center justify-center min-h-screen">
+          <div class="game-card animate__animated animate__fadeIn ml-[20%]">
+            <h2 class="text-4xl font-bold mb-8 text-center">获取你的挑战</h2>
+            <form method="post" action="/generate" class="space-y-6">
+              <div class="relative">
+                <input
+                  type="text"
+                  name="student_id"
+                  class="w-full bg-transparent border-2 border-white/30 rounded-lg p-4 text-white"
+                  placeholder="输入你的学号"
+                  required
+                />
+              </div>
+              <button type="submit" class="game-button w-full">生成并下载挑战包</button>
+            </form>
+          </div>
+        </div>
+        <div class="scroll-arrow">↓</div>
+      </div>
+
+      <!-- 第二页：上传评分文件 -->
+      <div class="section">
+        <div class="level-title">
+          <span class="level-step">Step Two</span>
+        </div>
+        <div class="flex items-center justify-center min-h-screen">
+          <div class="game-card animate__animated animate__fadeIn ml-[20%]">
+            <h2 class="text-4xl font-bold mb-8 text-center">提交你的答案</h2>
+            <form
+              id="uploadForm"
+              action="/upload"
+              method="post"
+              enctype="multipart/form-data"
+              class="space-y-6"
+              onsubmit="handleUpload(event)"
+            >
+              <div class="relative">
+                <input
+                  type="file"
+                  name="file"
+                  accept=".tar"
+                  class="w-full bg-transparent border-2 border-white/30 rounded-lg p-4 text-white"
+                  required
+                />
+              </div>
+              <button type="submit" class="game-button w-full">上传评分文件</button>
+            </form>
+          </div>
+        </div>
+        <div class="scroll-arrow">↓</div>
+      </div>
+
+      <!-- 第三页：查看评分板 -->
+      <div class="section">
+        <div class="level-title">
+          <span class="level-step">Step Three</span>
+        </div>
+        <div class="flex items-center justify-center min-h-screen">
+          <div class="game-card animate__animated animate__fadeIn ml-[20%]">
+            <h2 class="text-4xl font-bold mb-8 text-center">查看排行榜</h2>
+            <p id="time" class="text-center mb-4">Last updated: -- (update every 30 secs)</p>
+            <div class="score-container">
+              <table class="w-full" id="scoresTable">
+                <thead>
+                  <tr class="border-b border-white/20">
+                    <th class="p-4">Bomb ID</th>
+                    <th class="p-4">Update Time</th>
+                    <th class="p-4">Phases</th>
+                    <th class="p-4">Score</th>
+                    <th class="p-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.min.js"></script>
+    <script>
+      new fullpage("#fullpage", {
+        autoScrolling: true,
+        scrollHorizontally: true,
+        navigation: true,
+        navigationPosition: "right",
+        onLeave: function (origin, destination, direction) {
+          document.getElementById("progressBar").style.width = destination.index * 33.33 + "%";
+
+          const cards = document.querySelectorAll(".game-card");
+          if (cards[destination.index - 1]) {
+            cards[destination.index - 1].classList.add("animate__fadeIn");
+          }
+        },
+        afterLoad: function (origin, destination, direction) {
+          fullpage_api.setAllowScrolling(true);
+        },
+      });
+
+      const UPDATE_INTERVAL = 30000; // 30 seconds
+
+        function formatTimeToBeijing(date) {
+          const offset = 8; // 北京时间是UTC+8
+          const timezoneOffset = date.getTimezoneOffset() / 60; // 获取本地时间与UTC的时间差（小时）
+          const beijingTime = new Date(date.getTime() + (offset + timezoneOffset) * 60 * 60 * 1000);
+
+          const year = beijingTime.getFullYear();
+          const month = ('0' + (beijingTime.getMonth() + 1)).slice(-2); // 月份是从0开始的，所以加1
+          const day = ('0' + beijingTime.getDate()).slice(-2);
+          const hour = ('0' + (beijingTime.getHours()+8)).slice(-2);
+          const minute = ('0' + beijingTime.getMinutes()).slice(-2);
+
+          return `${year}-${month}-${day} ${hour}:${minute}`;
+        }
+
+      async function fetchScores() {
+        try {
+          const response = await fetch("/scores");
+          if (!response.ok) throw new Error("Failed to fetch scores");
+
+          const scores = await response.json();
+          const allGrades = [];
+
+          for (const work_id in scores) {
+            const lenGrade = scores[work_id].grade.length;
+            const uploadTime = new Date(scores[work_id].upload_time);
+            const formattedTime = formatTimeToBeijing(uploadTime);
+            allGrades.push({ id: work_id, grade: lenGrade, time: formattedTime });
+          }
+
+          allGrades.sort((a, b) => {
+            if (a.grade === 0 && b.grade === 0) {
+              return a.id.localeCompare(b.id);
+            }
+            if (a.grade === 0) return 1;
+            if (b.grade === 0) return -1;
+            return b.grade - a.grade;
+          });
+
+          let rank = 1;
+          allGrades.forEach((item) => {
+            item.rank = item.grade > 0 ? rank++ : "N/A";
+          });
+
+          updateScoreTable(scores, allGrades);
+          updateTime();
+        } catch (error) {
+          console.error("Error fetching scores:", error);
+          updateTime();
+        }
+      }
+
+      function updateScoreTable(scores, allGrades) {
+        const tbody = document.getElementById("scoresTable").getElementsByTagName("tbody")[0];
+        tbody.innerHTML = "";
+
+        allGrades.forEach(({ id, rank, time }) => {
+          const score = scores[id];
+          const row = tbody.insertRow();
+          row.innerHTML = `
+            <td class="p-4">${id}</td>
+            <td class="p-4">${time}</td>
+            <td class="p-4">${score.grade.length}</td>
+            <td class="p-4">${score.grade.length * 10}</td>
+            <td class="p-4">${rank}</td>
+          `;
+        });
+      }
+
+      function updateTime() {
+        const now = new Date();
+        document.getElementById(
+          "time"
+        ).textContent = `Last updated: ${now.toLocaleTimeString()} (update every 30 secs)`;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        updateTime();
+        fetchScores();
+        setInterval(fetchScores, UPDATE_INTERVAL);
+      });
+
+      document.querySelector(".start-button").addEventListener("click", function () {
+        fullpage_api.moveSectionDown();
+      });
+
+      document.querySelectorAll(".scroll-arrow").forEach((arrow) => {
+        arrow.addEventListener("click", function () {
+          fullpage_api.moveSectionDown();
+        });
+      });
+
+      async function handleUpload(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        try {
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (response.ok) {
+            const text = await response.text();
+            // 解析返回的文本
+            const match = text.match(/评分结果：<br>(.*?):\s*(\d+)\s*@\s*\[(.*?)\]/);
+
+            if (match) {
+              const [_, id, score, stages] = match;
+              // 创建一个评分对象
+              const scoreData = {
+                [id]: {
+                  grade: stages ? stages.split(",").map((s) => s.trim()) : [],
+                  score: parseInt(score),
+                  rank: "-", // 暂时不处理排名
+                },
+              };
+
+              // 更新表格
+              updateScoreTable(scoreData);
+            }
+
+            // 自动滚动到评分板页面
+            fullpage_api.moveTo(4);
+
+            // 清空表单
+            form.reset();
+          } else {
+            console.error("Upload failed");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      }
+    </script>
+  </body>
 </html>
