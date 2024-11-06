@@ -363,6 +363,20 @@
 
       const UPDATE_INTERVAL = 30000; // 30 seconds
 
+        function formatTimeToBeijing(date) {
+          const offset = 8; // 北京时间是UTC+8
+          const timezoneOffset = date.getTimezoneOffset() / 60; // 获取本地时间与UTC的时间差（小时）
+          const beijingTime = new Date(date.getTime() + (offset + timezoneOffset) * 60 * 60 * 1000);
+
+          const year = beijingTime.getFullYear();
+          const month = ('0' + (beijingTime.getMonth() + 1)).slice(-2); // 月份是从0开始的，所以加1
+          const day = ('0' + beijingTime.getDate()).slice(-2);
+          const hour = ('0' + (beijingTime.getHours()+8)).slice(-2);
+          const minute = ('0' + beijingTime.getMinutes()).slice(-2);
+
+          return `${year}-${month}-${day} ${hour}:${minute}`;
+        }
+
       async function fetchScores() {
         try {
           const response = await fetch("/scores");
@@ -373,8 +387,9 @@
 
           for (const work_id in scores) {
             const lenGrade = scores[work_id].grade.length;
-            const upload_time = scores[work_id].upload_time;
-            allGrades.push({ id: work_id, grade: lenGrade, time: upload_time });
+            const uploadTime = new Date(scores[work_id].upload_time);
+            const formattedTime = formatTimeToBeijing(uploadTime);
+            allGrades.push({ id: work_id, grade: lenGrade, time: formattedTime });
           }
 
           allGrades.sort((a, b) => {
@@ -403,12 +418,12 @@
         const tbody = document.getElementById("scoresTable").getElementsByTagName("tbody")[0];
         tbody.innerHTML = "";
 
-        allGrades.forEach(({ id, rank }) => {
+        allGrades.forEach(({ id, rank, time }) => {
           const score = scores[id];
           const row = tbody.insertRow();
           row.innerHTML = `
             <td class="p-4">${id}</td>
-            <td class="p-4">${score.upload_time || "-"}</td>
+            <td class="p-4">${time}</td>
             <td class="p-4">${score.grade.length}</td>
             <td class="p-4">${score.grade.length * 10}</td>
             <td class="p-4">${rank}</td>
